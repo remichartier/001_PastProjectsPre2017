@@ -1,0 +1,28 @@
+#if defined (SYSMETS_HET)
+#else
+#define SYSMETS_HET
+
+typedef unsigned char u8;
+typedef unsigned short int u16;
+typedef unsigned long  u32;
+typedef char s8;
+typedef short int s16;
+typedef long  s32;
+
+
+#if defined (__DOS__)
+
+typedef u8 BYTE;
+typedef  u8* LPBYTE;
+typedef u16 WORD;
+typedef u32 DWORD;
+
+typedef  FILE HANDLE;
+typedef  FILE* PHANDLE ;
+typedef  FILE* LPHANDLE;
+
+#endif /*__DOS__*/
+#endif /*SYSMETS_HET*/
+
+
+

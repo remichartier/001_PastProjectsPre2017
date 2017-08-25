@@ -1,0 +1,5 @@
+﻿gfi: gfi.c
+	@echo
+	@echo "Make the get field info (gfi) executable"
+	@echo ----------------------------------------
+	cc -o gfi gfi.c

@@ -1,0 +1,28 @@
+#line 1"COLORS1.RC"
+#line 1
+/*-----------------------------------
+ABOUT1.RC : Fichier des ressources
+-----------------------------------*/
+#line 5
+#include <windows.h>
+#include "about1.h"
+#line 8
+About1 ICON about1.ico
+#line 10
+About1 MENU
+{
+POPUP "&Aide"
+{
+MENUITEM "&A propos de About1...",       IDM_ABOUT
+}
+}
+#line 18
+AboutBox DIALOG  20, 20, 160, 80
+STYLE WS_POPUP | WS_DLGFRAME
+{
+CTEXT "About1"                            -1,   0, 12, 160,  8
+ICON  "About1"                            -1,   8,  8,   0,  0
+CTEXT "Demonstration de boite A Propos"   -1,   0, 36, 160,  8
+CTEXT "(c) Charles Petzold, 1992"         -1,   0, 48, 160,  8
+DEFPUSHBUTTON "OK"                      IDOK,  64, 60,  32, 14, WS_GROUP
+} 

@@ -1,0 +1,26 @@
+
+/*-----------------------------------
+   SHOWDIB.RC : Fichier de ressources
+  -----------------------------------*/
+#if !defined (SYSMETS_RC)
+#define SYSMETS_RC
+#endif
+
+#include "sysmets.h"
+
+
+#define SBS_VERT_TAB (SBS_VERT | WS_TABSTOP)
+
+hedit MENU
+     {
+     POPUP "&Fichier"
+          {
+					MENUITEM "&Ouvrir...",    		IDM_OPEN
+					MENUITEM "&Decodage Mpeg",    IDM_DECODAGE
+          MENUITEM "&Quitter",					IDM_QUITTER
+	  }
+
+     }
+
+
+#undef SYSMETS_RC

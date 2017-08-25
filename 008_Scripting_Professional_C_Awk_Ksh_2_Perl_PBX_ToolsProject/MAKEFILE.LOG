@@ -1,0 +1,16 @@
+#
+#    Makefile for logd driver and support task.
+#
+DPNDFILES = /ibxos/sys486/drivers/logd/logger.h
+CFLAGS =  -c -I/ibxos/incl486 -I/usr/include/ibxe -I/usr/include
+LDFLAGS = -v
+OLIBS   = -ltq -lc -lgnu -lsll
+
+nOFILES=$(FILES:xxx=n.o)
+dOFILES=$(FILES:xxx=d.o)
+
+logrpt: logrpt.o
+	ld -g -o logrpt $(LDFLAGS) /lib/init.o -P 1000 logrpt.o $(OLIBS)
+
+logrpt.o: logrpt.c $(DPNDFILES)
+	gcc $(CFLAGS) -g -o logrpt.o logrpt.c

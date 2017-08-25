@@ -1,0 +1,13 @@
+;---------------------------------------------
+; ABOUT1.DEF : Fichier de definition de module
+;---------------------------------------------
+
+NAME           COLORS1
+
+DESCRIPTION    'A propos de... V.1 (c) Charles Petzold, 1992'
+EXETYPE        WINDOWS
+STUB           'WINSTUB.EXE'
+CODE           PRELOAD MOVEABLE DISCARDABLE
+DATA           PRELOAD MOVEABLE MULTIPLE
+HEAPSIZE       1024
+STACKSIZE      8192

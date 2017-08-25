@@ -1,0 +1,64 @@
+#if !defined (SYSMETS_HEM)
+#define SYSMETS_HEM
+
+#if !defined (__DOS__)
+#define PREPARE_READ_NB_FROM_STREAM u8 in
+#define READ_NB_FROM_STREAM(StreamStart,pBitPosition,BitLength,pByte)\
+	for(in=0;in<8;in++)\
+	{\
+		*pByte |= (((BYTE)*(StreamStart+ (*pBitPosition/8))>>(7-(*pBitPosition)%8))) && 0x01;\
+		*pBitPosition ++;\
+	} /* end for in=0 to 8*/
+
+
+#define PREPARE_NB_TO_STRING()
+#define NB_TO_STRING(StreamStart,BitPosition, StringAddress,BitLength,increment)\
+				for(increment=0;increment<BitLength;increment++)\
+				{\
+					itoa((((unsigned char)*(StreamStart+BitPosition/8)) >>(7-BitPosition%8))&0x01,&StringAddress[increment],10);\
+					Bitposition++;\
+				}
+#define GLOBAL_LOCK(lptr, phandle,filename,string1,string2,return,openrights)\
+									lptr = GlobalLock(*phandle);\
+									if (lptr == NULL)\
+									{\
+										return = 1;\
+										MessageBox(hwnd,string1,string2, openrights);\
+									}
+#define LOCAL_ALLOC(length,handle,string)\
+										handle = LocalAlloc(LMEM_FIXED,length);\
+										string = LocalLock(handle);
+#define LOCAL_FREE(handle,string)\
+									 LocalUnlock(handle);\
+									 LocalFree(handle)
+#else  /* __DOS__ */
+/*#define GET_NB_FROM_STREAM((BYTE *)stream_id,(DWORD *)pBitPos,(BYTE)i)\
+	f1ReadNbFromStream((LPBYTE) stream_id,(DWORD *) pBitPos,BYTE BitLength,BYTE * pByte)
+*/
+#define PREPARE_READ_NB_FROM_STREAM
+#define READ_NB_FROM_STREAM(StreamStart,BitPosition,BitLength,pByte)\
+	f1ReadNbFromStream(StreamStart,BitPosition,BitLength,pByte)
+
+#define NB_TO_STRING(StreamStart,BitPosition, StringAddress,BitLength,pincrement)\
+				f1NbToString(StreamStart,BitPosition, StringAddress,BitLength,pincrement)
+
+#define GLOBAL_LOCK(lptr, phandle,filename,string1,string2,return,openrights)\
+								 phandle = fopen(filename,openrights);\
+								 (FILE *)lptr = phandle;\
+								 if(phandle == NULL)\
+								 {\
+									return = 1;\
+									MessageBox(hwnd,string1,string2, openrights);\
+								 }\
+								 rewind (phandle);
+#define GlobalUnlock(handle) fclose(handle)
+#define GlobalFree(handle)
+#define LOCAL_ALLOC(length,handle,string) string = malloc(length)
+#define LOCAL_FREE(handle,string) free(string)
+#define MessageBox(handle,string1, string2,nb) printf("\n%s : %s\n",string2,string1)
+#endif /* !__DOS */
+
+#endif /*SYSMETS_HEM*/
+
+
+
