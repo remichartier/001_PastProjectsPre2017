@@ -1,0 +1,327 @@
+Function GetCustomerInfo(ByVal Description As String, tag As String) As String
+    Application.Volatile
+    Dim info As String
+    Dim pos, pos_EOL, pos2, pos_EOL2, length As Integer
+    
+    length = Len(tag)
+    
+    'if find email tag in description
+    pos = InStr(Description, tag)
+    
+    If (pos > 0) Then
+    'email_tag found --> find the next EOL/Char(10) position InStr( [start], string, substring, [compare] )
+    'then extract chars after this email_tag using MID( text, start_position, number_of_characters ) ?
+        
+        'Search for next EOL Character
+        pos_EOL = InStr(pos + length, Description, vbLf)
+        
+        If pos_EOL > 0 Then
+        
+            info = Mid(Description, pos + length, pos_EOL - pos - length)
+        
+            info = Trim(info)
+           
+            'case "contact E-mail:" + EOL + email address.
+            If StrComp(info, "") = 0 And StrComp(tag, "Contact E-mail:") = 0 Then
+               
+                'In this case, search next line. If next line contains @ --> extract email address
+                'Otherwise, return "".
+                pos2 = InStr(pos_EOL + 1, Description, "@")
+                If pos2 <= 0 Then
+                    post2 = Len(Description)
+                End If
+                If pos2 > 0 Then
+                
+                    'Search EOL position
+                    pos_EOL2 = InStr(pos_EOL + 1, Description, vbLf)
+                    If pos_EOL2 < 1 Then
+                        pos_EOL2 = Len(Description)
+                    End If
+                    If pos_EOL2 > 0 Then
+                        info = Mid(Description, pos_EOL + 1, pos_EOL2)
+                        info = Trim(info)
+                    Else
+                        info = ""
+                    End If
+                Else
+                    info = ""
+                End If
+            End If
+        'Do not check validity of email address as sometimes, they could inverse phone numbers and email addresses...
+        Else
+            info = ""
+        End If
+        
+        GetCustomerInfo = info
+    
+    Else
+    
+        GetCustomerInfo = ""
+    
+    End If
+    
+End Function
+Function read_url(ByVal url As String) As String
+    Dim strResult As String
+    Dim objHTTP As Object
+    Dim cnt As Integer
+    Set objHTTP = CreateObject("WinHttp.WinHttpRequest.5.1")
+    objHTTP.Open "GET", url, False
+    objHTTP.setRequestHeader "User-Agent", "Mozilla/4.0 (compatible; MSIE 6.0; Windows NT 5.0)"
+    objHTTP.setRequestHeader "Content-type", "application/x-www-form-urlencoded"
+    objHTTP.send ("keyword=php")
+    strResult = objHTTP.responseText
+    cnt = Len(strResult)
+    'Worksheets("Sheet1").Range("A10:A10") = strResult
+    read_url = strResult
+End Function
+Function HtmlToText(sHTML) As String
+  Dim oDoc As HTMLDocument
+  Set oDoc = New HTMLDocument
+  oDoc.body.innerHTML = sHTML
+  HtmlToText = oDoc.body.innerText
+End Function
+Function GetLeMallID(ByVal Description As String) As String
+    Application.Volatile
+    Dim url_base, url_ticket As String
+    Dim pos, pos2 As Integer
+    Dim feedback_content, temp_string As String
+    Dim temp_string2 As Variant
+    
+    'Cache implementation
+    Dim found As Boolean
+    
+    
+    'Implement record to speed procedure and save url loading times (sort of Cache worksheet).
+    'Created "Cache" worksheet with columns : "Forum or bug.letv.com link,  Lemall ID link,  LeMall Id"
+    'As columns A, B, C.
+    Sheets("Cache").Activate
+    'iCount = WorksheetFunction.Count(objSelect)
+    
+    url_base = "http://bug.letv.com/us/ue/feedback/detail/"
+    
+    'For bug.letv.com, extract bug.letv.com url.
+    'if from bug.letv.com
+    pos = InStr(Description, url_base)
+    
+    If (pos > 0) Then
+    'bug.letv.com link found --> retrieve the bug.letv.com url
+        url_ticket = Mid(Description, pos, Len(url_base & "A20176ZN016D319"))
+        
+        
+        'Now need to get this url_ticket content and find the LeMall Nickname from customer
+        
+        'Cache implementation
+        '1. search first if this url is in the Cache sheet.
+        'found =WorksheetFunction.Find(
+        
+        feedback_content = read_url(url_ticket)
+        'now will need to search "My comments"
+        
+        feedback_content = HtmlToText(feedback_content)
+        
+        pos2 = InStr(feedback_content, "My comments")
+        If (pos2 > 0) Then
+        
+            'GetLeMallID = Mid(feedback_content, pos2, 100)
+            temp_string = Mid(feedback_content, pos2, 100)
+            temp_string = LTrim(temp_string)
+            temp_string2 = Split(temp_string)
+            GetLeMallID = temp_string2(2)
+        Else
+        
+            GetLeMallID = ""
+        End If
+        
+        
+            
+    Else
+    
+        GetLeMallID = ""
+    
+    End If
+    
+End Function
+Function FindFeedbackLink(ByVal Description As String) As String
+    Application.Volatile
+    Dim temp_Jira, url_base, url_ticket, ticket_content As String
+    Dim pos, pos2 As Integer
+    Dim feedback_content As String
+    
+    
+    url_base = "http://bug.letv.com/us/ue/feedback/detail/"
+    
+    'For bug.letv.com, extract bug.letv.com url.
+    'if from bug.letv.com
+    pos = InStr(Description, url_base)
+    
+    If (pos > 0) Then
+    'bug.letv.com link found --> retrieve the bug.letv.com url
+        url_ticket = Mid(Description, pos, Len(url_base & "A20176ZN016D319"))
+        
+        
+        'Now need to get this url_ticket content and find the LeMall Nickname from customer
+        'ticket_content = WebService(url_ticket)
+        feedback_content = read_url(url_ticket)
+        'now will need to search "My comments"
+        
+        feedback_content = HtmlToText(feedback_content)
+        
+        pos2 = InStr(feedback_content, "My comments")
+        If (pos > 0) Then
+        
+            FindFeedbackLink = Mid(feedback_content, pos2, 100)
+        Else
+        
+            FindFeedbackLink = ""
+        End If
+        
+        
+            
+    Else
+    
+        FindFeedbackLink = ""
+    
+    End If
+    
+End Function
+Function FinalStatusDescription(ByVal StatusDescription As String) As String
+    Application.Volatile
+    Dim tmp, tmp2, dot As String
+    Dim cnt As Integer
+   
+    tmp = StatusDescription
+    'Remove anything after 1st line - cf Quang/Brian comments.
+    cnt = InStr(tmp, Chr(10))
+    If cnt > 0 Then
+       tmp = Left(tmp, cnt - 1)
+    End If
+            
+    'Remove "The app " on statuses like "is not responding"
+    tmp = RemoveString(tmp, "The app ")
+        
+    'Remove dots at end of the StatusDescription
+    'First, trim from the Right before searching the "."
+    tmp = RTrim(tmp)
+    dot = "."
+    If Len(tmp) <> 0 Then
+        tmp2 = Right(tmp, 1)
+        If (StrComp(tmp2, dot) = 0) Then
+            tmp = Left(tmp, Len(tmp) - 1)
+        End If
+    End If
+     FinalStatusDescription = tmp
+End Function
+Function FinalLabel(ByVal StatusDescription As String, LinkedIssues As String) As String
+    Application.Volatile
+    Dim temp_Jira As String
+    
+    temp_Jira = FormatLinkedIssues("", LinkedIssues)
+    
+    If StrComp("Describe the status in detail", StatusDescription) = 0 Then
+        FinalLabel = "Discard - (Closed before 1st report Nov 7th 2016)"
+    Else
+        'Concatenate LinkedIssues with StatusDescription
+        FinalLabel = temp_Jira & StatusDescription
+    End If
+    
+End Function
+Function RemoveString(ByVal s As String, toremove As String) As String
+    
+    Dim cnt As Integer
+    Dim s_temp As String
+    
+    s_temp = s
+    
+    cnt = InStr(s_temp, toremove)
+    If cnt <> 0 Then
+        s_temp = Replace(s_temp, toremove, "")
+    End If
+    RemoveString = s_temp
+    
+End Function
+Function ListRnDJiraTicket(ByVal StatusDescription As String, LinkedIssues As String) As String
+   Application.Volatile
+    
+    
+    ListRnDJiraTicket = FormatLinkedIssues(Chr(10), LinkedIssues)
+        
+End Function
+Function FormatLinkedIssues(ByVal CommaReplacement As String, LinkedIssues As String) As String
+    Dim tmp, string_Oversea As String
+    Dim cnt, cntTotal, cnt1 As Integer
+    
+    'Sort JIRA Tickets
+    'String to array
+    Dim arr_Jiras, arr_Value As Variant
+    Dim size As Integer
+    
+    
+    'Remove spaces in temp_JIRA.
+    temp_Jira = RemoveString(LinkedIssues, " ")
+    
+    'Remove all OVERSEA references from temp_JIRA (LinkedIssues).
+    cnt = InStr(temp_Jira, "OVERSEA")
+    While cnt <> 0
+        cntTotal = Len(temp_Jira)
+        string_Oversea = Right(temp_Jira, cntTotal - cnt + 1)
+        string_Oversea = Left(string_Oversea, Len("OVERSEA-xxxx"))
+        temp_Jira = Replace(temp_Jira, string_Oversea, "")
+        cnt = InStr(temp_Jira, "OVERSEA")
+    Wend
+    
+    'ordering labels
+    'Remove all commas if first character of temp_Jira string
+    'Note : not needed as we split after --> remove all commas de facto.
+    If 0 Then
+        While Left(temp_Jira, 1) = ","
+            temp_Jira = Replace(temp_Jira, ",", "", 1)
+        Wend
+        'Remove all comas if last character of temp_Jira string
+        While Right(temp_Jira, 1) = ","
+            cnt = Len(temp_Jira)
+            temp_Jira = Left(temp_Jira, cnt - 1)
+        Wend
+    End If
+    
+    arr_Jiras = Split(temp_Jira, ",")
+    size = UBound(arr_Jiras, 1) + 1
+    If size >= 2 Then
+        'More than 2 Jira tickets in arr_Jiras
+        'Need to compare and sort the strings
+        'First loop
+        
+        For cnt = 0 To size - 1
+            'Second loop
+            For cnt2 = 0 To size - 2
+                If StrComp(arr_Jiras(cnt2), arr_Jiras(cnt2 + 1), 1) = 1 Then
+                    'Exchange the strings
+                    tmp = arr_Jiras(cnt2)
+                    arr_Jiras(cnt2) = arr_Jiras(cnt2 + 1)
+                    arr_Jiras(cnt2 + 1) = tmp
+                End If
+            Next cnt2
+        Next cnt
+        'From here, should have array arr_Jiras sorted.
+        'So now, need to concatenate all strings.
+        temp_Jira = ""
+        
+        For cnt = 0 To size - 1
+            temp_Jira = temp_Jira & arr_Jiras(cnt)
+            If cnt <> (size - 1) Then
+                If Len(arr_Jiras(cnt)) <> 0 Then
+                    temp_Jira = temp_Jira & CommaReplacement
+                End If
+            End If
+        Next cnt
+        
+        'From here, should have temp_JIRA without OVERSEA and with JIRAs ordered.
+    End If
+    
+    'Note : below is not necessary anymore as already split by commas so all commas were already removed ...
+    'Remove the commas from temp_JIRA
+    'temp_Jira = RemoveString(temp_Jira, ",")
+    
+    FormatLinkedIssues = temp_Jira
+End Function
+
